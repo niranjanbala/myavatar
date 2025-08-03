@@ -83,7 +83,7 @@ export interface HeyGenUsage {
   api_call_type: string;
   tokens_used: number;
   cost_usd: number;
-  response_data: any;
+  response_data: Record<string, unknown>;
   created_at: string;
 }
 

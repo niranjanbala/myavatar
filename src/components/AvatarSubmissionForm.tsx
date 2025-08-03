@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { AvatarCreationForm, PersonaTag, PERSONA_DESCRIPTIONS, VOICE_TYPES, VoiceType } from '@/types';
+import { AvatarCreationForm, PERSONA_DESCRIPTIONS, VOICE_TYPES } from '@/types';
 
 interface AvatarSubmissionFormProps {
   onSubmit: (formData: AvatarCreationForm) => Promise<void>;
@@ -238,7 +238,7 @@ export default function AvatarSubmissionForm({ onSubmit, isSubmitting }: AvatarS
             <ul className="space-y-1 text-xs">
               <li>• Your avatar will be generated using your HeyGen API key</li>
               <li>• Submissions require moderation approval before going live</li>
-              <li>• You'll be notified once your agent joins the neural network</li>
+              <li>• You&apos;ll be notified once your agent joins the neural network</li>
               <li>• High-quality, engaging content gets featured status</li>
             </ul>
           </div>

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase';
 import { createHeyGenVideoWithKey } from '@/lib/heygen';
-import { AvatarCreationForm, ApiResponse, AvatarSubmission } from '@/types';
+import { AvatarCreationForm } from '@/types';
 
 export async function POST(request: NextRequest) {
   try {
