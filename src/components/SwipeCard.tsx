@@ -190,7 +190,7 @@ export default function SwipeCard({ avatar, onSwipe, isTop }: SwipeCardProps) {
             <div className="relative">
               <div className="absolute -left-2 top-0 w-1 h-full bg-gradient-to-b from-cyan-400 to-purple-500 rounded-full"></div>
               <p className="text-white text-lg leading-relaxed font-medium pl-4">
-                "{avatar.script}"
+                &ldquo;{avatar.script}&rdquo;
               </p>
             </div>
           </div>

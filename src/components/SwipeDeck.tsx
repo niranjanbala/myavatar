@@ -56,7 +56,7 @@ export default function SwipeDeck({ selectedPersona }: SwipeDeckProps) {
         const initialAvatars = await fetchAvatars(0);
         setAvatars(initialAvatars);
         setCurrentIndex(0);
-      } catch (error) {
+      } catch {
         setError('Failed to load avatars. Please try again.');
       } finally {
         setLoading(false);

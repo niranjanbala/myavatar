@@ -305,7 +305,7 @@ export default function LeaderboardPage() {
                         </div>
                         
                         <p className="text-agentic-primary mb-2 line-clamp-2 group-hover:text-white transition-colors">
-                          "{avatar.script}"
+                          &ldquo;{avatar.script}&rdquo;
                         </p>
                       </div>
 
