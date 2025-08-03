@@ -48,7 +48,7 @@ export const supabase = (() => {
   try {
     return getSupabaseClient();
   } catch {
-    return null as any;
+    return null;
   }
 })();
 
@@ -56,6 +56,6 @@ export const typedSupabase = (() => {
   try {
     return getTypedSupabaseClient();
   } catch {
-    return null as any;
+    return null;
   }
 })();

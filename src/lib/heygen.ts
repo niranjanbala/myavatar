@@ -1,4 +1,4 @@
-import { HeyGenVideoRequest, HeyGenVideoResponse, PersonaTag, ScriptPrompt } from '@/types';
+import { HeyGenVideoRequest, HeyGenVideoResponse, PersonaTag } from '@/types';
 
 const HEYGEN_API_KEY = process.env.HEYGEN_API_KEY;
 const HEYGEN_API_URL = process.env.HEYGEN_API_URL || 'https://api.heygen.com/v2';

@@ -102,7 +102,7 @@ export async function GET(request: NextRequest) {
       }
 
       // Get vote counts for each avatar
-      const avatarIds = avatars?.map((a: any) => a.id) || [];
+      const avatarIds = avatars?.map((a) => a.id) || [];
       const { data: votes, error: voteError } = await supabase
         .from('niranjan_votes')
         .select('avatar_id, vote_type')
@@ -117,7 +117,7 @@ export async function GET(request: NextRequest) {
       }
 
       // Calculate vote counts
-      const votesByAvatar = votes?.reduce((acc: any, vote: any) => {
+      const votesByAvatar = votes?.reduce((acc: Record<string, { up: number; down: number; total: number }>, vote) => {
         if (!acc[vote.avatar_id]) {
           acc[vote.avatar_id] = { up: 0, down: 0, total: 0 };
         }
@@ -127,7 +127,7 @@ export async function GET(request: NextRequest) {
       }, {} as Record<string, { up: number; down: number; total: number }>) || {};
 
       // Combine avatars with vote data
-      const leaderboardData = avatars?.map((avatar: any) => ({
+      const leaderboardData = avatars?.map((avatar) => ({
         ...avatar,
         vote_count: votesByAvatar[avatar.id]?.total || 0,
         up_votes: votesByAvatar[avatar.id]?.up || 0,
@@ -135,7 +135,7 @@ export async function GET(request: NextRequest) {
         approval_rate: votesByAvatar[avatar.id]?.total
           ? Math.round((votesByAvatar[avatar.id].up / votesByAvatar[avatar.id].total) * 100 * 100) / 100
           : 0
-      })).sort((a: any, b: any) => {
+      })).sort((a, b) => {
         if (b.vote_count !== a.vote_count) {
           return b.vote_count - a.vote_count;
         }

@@ -73,8 +73,8 @@ export default function SwipeDeck({ selectedPersona }: SwipeDeckProps) {
         try {
           const moreAvatars = await fetchAvatars(avatars.length);
           setAvatars(prev => [...prev, ...moreAvatars]);
-        } catch (error) {
-          console.error('Error prefetching avatars:', error);
+        } catch (err) {
+          console.error('Error prefetching avatars:', err);
         }
       }
     };
@@ -154,7 +154,7 @@ export default function SwipeDeck({ selectedPersona }: SwipeDeckProps) {
     return (
       <div className="flex flex-col items-center justify-center h-96 text-center">
         <h3 className="text-2xl font-bold text-gray-800 mb-4">
-          🎉 You've seen all avatars!
+          🎉 You&apos;ve seen all avatars!
         </h3>
         <p className="text-gray-600 mb-6">
           Check out the leaderboard to see the results

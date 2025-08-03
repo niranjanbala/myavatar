@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState } from 'react';
 import { motion, PanInfo, useMotionValue, useTransform } from 'framer-motion';
 import { Avatar } from '@/types';
 import Image from 'next/image';
@@ -29,7 +29,7 @@ export default function SwipeCard({ avatar, onSwipe, isTop }: SwipeCardProps) {
     setIsDragging(true);
   };
 
-  const handleDragEnd = (event: any, info: PanInfo) => {
+  const handleDragEnd = (event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
     setIsDragging(false);
     const threshold = 120;
     
