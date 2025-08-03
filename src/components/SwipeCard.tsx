@@ -1,7 +1,7 @@
 'use client';
 
-import { useState } from 'react';
-import { motion, PanInfo, useMotionValue, useTransform } from 'framer-motion';
+import { useState, useRef, useEffect } from 'react';
+import { motion, PanInfo, useMotionValue, useTransform, AnimatePresence } from 'framer-motion';
 import { Avatar } from '@/types';
 import Image from 'next/image';
 
@@ -14,16 +14,29 @@ interface SwipeCardProps {
 export default function SwipeCard({ avatar, onSwipe, isTop }: SwipeCardProps) {
   const [exitX, setExitX] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
+  const [showProfile, setShowProfile] = useState(false);
+  const [swipeFeedback, setSwipeFeedback] = useState<'accept' | 'reject' | null>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
+  
   const x = useMotionValue(0);
-  const rotate = useTransform(x, [-300, 300], [-30, 30]);
-  const opacity = useTransform(x, [-300, -150, 0, 150, 300], [0, 1, 1, 1, 0]);
-  const scale = useTransform(x, [-300, 0, 300], [0.8, 1, 0.8]);
+  const rotate = useTransform(x, [-400, 400], [-15, 15]);
+  const opacity = useTransform(x, [-400, -200, 0, 200, 400], [0, 1, 1, 1, 0]);
+  const scale = useTransform(x, [-400, 0, 400], [0.9, 1, 0.9]);
 
-  // Enhanced swipe indicators
-  const likeOpacity = useTransform(x, [0, 150], [0, 1]);
-  const nopeOpacity = useTransform(x, [-150, 0], [1, 0]);
-  const likeScale = useTransform(x, [0, 150], [0.5, 1.2]);
-  const nopeScale = useTransform(x, [-150, 0], [1.2, 0.5]);
+  // Enhanced swipe indicators with cyber aesthetics
+  const acceptOpacity = useTransform(x, [0, 200], [0, 1]);
+  const rejectOpacity = useTransform(x, [-200, 0], [1, 0]);
+  const acceptScale = useTransform(x, [0, 200], [0.8, 1.3]);
+  const rejectScale = useTransform(x, [-200, 0], [1.3, 0.8]);
+
+  useEffect(() => {
+    // Auto-play video if available
+    if (videoRef.current && avatar.heygen_video_url) {
+      videoRef.current.play().catch(() => {
+        // Fallback to image if video fails
+      });
+    }
+  }, [avatar.heygen_video_url]);
 
   const handleDragStart = () => {
     setIsDragging(true);
@@ -31,46 +44,70 @@ export default function SwipeCard({ avatar, onSwipe, isTop }: SwipeCardProps) {
 
   const handleDragEnd = (event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
     setIsDragging(false);
-    const threshold = 120;
+    const threshold = 150;
     
     if (info.offset.x > threshold) {
-      // Swipe right - upvote
-      setExitX(1000);
-      onSwipe('right');
+      // Swipe right - accept
+      setExitX(1200);
+      setSwipeFeedback('accept');
+      setTimeout(() => onSwipe('right'), 200);
     } else if (info.offset.x < -threshold) {
-      // Swipe left - downvote
-      setExitX(-1000);
-      onSwipe('left');
+      // Swipe left - reject
+      setExitX(-1200);
+      setSwipeFeedback('reject');
+      setTimeout(() => onSwipe('left'), 200);
     }
   };
 
   const handleButtonClick = (direction: 'left' | 'right') => {
-    setExitX(direction === 'right' ? 1000 : -1000);
-    onSwipe(direction);
+    setExitX(direction === 'right' ? 1200 : -1200);
+    setSwipeFeedback(direction === 'right' ? 'accept' : 'reject');
+    setTimeout(() => onSwipe(direction), 200);
   };
 
-  const getPersonaGradient = (persona: string) => {
-    const gradients = {
-      hacker: 'from-cyan-500 via-blue-600 to-purple-700',
-      diva: 'from-pink-500 via-rose-500 to-purple-600',
-      funny: 'from-yellow-400 via-orange-500 to-red-500',
-      serious: 'from-gray-600 via-blue-700 to-indigo-800',
-      quirky: 'from-green-400 via-teal-500 to-blue-600',
-      techy: 'from-blue-500 via-indigo-600 to-purple-700',
+  const getPersonaColor = (persona: string) => {
+    const colors = {
+      hacker: 'neon-cyan',
+      diva: 'neon-pink',
+      funny: 'neon-green',
+      serious: 'neon-purple',
+      quirky: 'neon-green',
+      techy: 'neon-cyan',
     };
-    return gradients[persona as keyof typeof gradients] || 'from-purple-500 to-blue-600';
+    return colors[persona as keyof typeof colors] || 'neon-cyan';
   };
 
-  const getPersonaIcon = (persona: string) => {
-    const icons = {
+  const getPersonaEmoji = (persona: string) => {
+    const emojis = {
       hacker: '🔒',
-      diva: '💅',
+      diva: '💎',
       funny: '😂',
       serious: '🎯',
-      quirky: '🤪',
-      techy: '💻',
+      quirky: '🌟',
+      techy: '⚡',
     };
-    return icons[persona as keyof typeof icons] || '🎭';
+    return emojis[persona as keyof typeof emojis] || '🤖';
+  };
+
+  const getPlayfulFeedback = (type: 'accept' | 'reject') => {
+    const feedbacks = {
+      accept: [
+        '🔥 +1 for charisma',
+        '✨ Neural match!',
+        '💫 Vibe approved',
+        '🚀 Connection made',
+        '⚡ Energy sync',
+      ],
+      reject: [
+        '👻 Not this time',
+        '🌊 Different wavelength',
+        '🎭 Plot twist',
+        '🔄 Next reality',
+        '💭 Different dimension',
+      ]
+    };
+    const options = feedbacks[type];
+    return options[Math.floor(Math.random() * options.length)];
   };
 
   return (
@@ -79,171 +116,249 @@ export default function SwipeCard({ avatar, onSwipe, isTop }: SwipeCardProps) {
       style={{ x, rotate, opacity, scale }}
       drag={isTop ? 'x' : false}
       dragConstraints={{ left: 0, right: 0 }}
-      dragElastic={0.2}
+      dragElastic={0.3}
       onDragStart={handleDragStart}
       onDragEnd={handleDragEnd}
-      animate={exitX !== 0 ? { x: exitX, rotate: exitX > 0 ? 30 : -30 } : {}}
-      transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-      whileHover={!isDragging ? { scale: 1.02 } : {}}
+      animate={exitX !== 0 ? { x: exitX, rotate: exitX > 0 ? 20 : -20, opacity: 0 } : {}}
+      transition={{ type: 'spring', stiffness: 400, damping: 40 }}
+      whileHover={!isDragging ? { scale: 1.01 } : {}}
     >
-      <div className="w-full h-full glass-effect rounded-3xl overflow-hidden shadow-2xl border border-white/10 relative">
-        {/* Neural network overlay */}
-        <div className="absolute inset-0 opacity-20 pointer-events-none">
-          <div className="absolute top-4 left-4 w-2 h-2 bg-cyan-400 rounded-full animate-pulse"></div>
-          <div className="absolute top-8 right-8 w-1 h-1 bg-purple-400 rounded-full animate-pulse delay-300"></div>
-          <div className="absolute bottom-12 left-8 w-1.5 h-1.5 bg-pink-400 rounded-full animate-pulse delay-700"></div>
-          <div className="absolute bottom-6 right-6 w-1 h-1 bg-green-400 rounded-full animate-pulse delay-1000"></div>
-          
-          {/* Connecting lines */}
-          <svg className="absolute inset-0 w-full h-full">
-            <line x1="16" y1="16" x2="320" y2="32" stroke="url(#neural-gradient)" strokeWidth="0.5" opacity="0.3" />
-            <line x1="320" y1="32" x2="32" y2="384" stroke="url(#neural-gradient)" strokeWidth="0.5" opacity="0.3" />
-            <line x1="32" y1="384" x2="344" y2="408" stroke="url(#neural-gradient)" strokeWidth="0.5" opacity="0.3" />
-            <defs>
-              <linearGradient id="neural-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" stopColor="#00f5ff" />
-                <stop offset="100%" stopColor="#8b5cf6" />
-              </linearGradient>
-            </defs>
-          </svg>
-        </div>
-
-        {/* Avatar Image with enhanced styling */}
-        <div className={`relative h-2/3 bg-gradient-to-br ${getPersonaGradient(avatar.persona_tag)} overflow-hidden`}>
-          <div className="absolute inset-0 bg-black/20"></div>
-          <Image
-            src={avatar.image_url}
-            alt="Avatar"
-            fill
-            className="object-cover mix-blend-overlay"
-            sizes="(max-width: 768px) 100vw, 400px"
-            priority={isTop}
-          />
-          
-          {/* Holographic overlay effect */}
-          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent animate-quantum-shimmer"></div>
-          
-          {/* Enhanced Swipe Indicators */}
-          <motion.div
-            className="absolute top-8 left-8 px-6 py-3 rounded-full font-bold text-lg transform -rotate-12 border-2"
-            style={{ 
-              opacity: nopeOpacity, 
-              scale: nopeScale,
-              backgroundColor: 'rgba(239, 68, 68, 0.9)',
-              borderColor: '#ef4444',
-              color: '#ffffff'
-            }}
-          >
-            <div className="flex items-center gap-2">
-              <span className="text-2xl">👎</span>
-              <span className="cyber-text font-black">REJECT</span>
-            </div>
-          </motion.div>
-          
-          <motion.div
-            className="absolute top-8 right-8 px-6 py-3 rounded-full font-bold text-lg transform rotate-12 border-2"
-            style={{ 
-              opacity: likeOpacity, 
-              scale: likeScale,
-              backgroundColor: 'rgba(34, 197, 94, 0.9)',
-              borderColor: '#22c55e',
-              color: '#ffffff'
-            }}
-          >
-            <div className="flex items-center gap-2">
-              <span className="text-2xl">👍</span>
-              <span className="quantum-text font-black">ACCEPT</span>
-            </div>
-          </motion.div>
-
-          {/* AI Status Indicator */}
-          <div className="absolute top-4 right-4 flex items-center gap-2 glass-effect px-3 py-1 rounded-full">
-            <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
-            <span className="text-xs text-green-400 font-medium">AI ACTIVE</span>
-          </div>
-        </div>
-
-        {/* Enhanced Content Section */}
-        <div className="h-1/3 p-6 flex flex-col justify-between relative overflow-hidden">
-          {/* Background pattern */}
-          <div className="absolute inset-0 opacity-5">
-            <div className="w-full h-full bg-gradient-to-r from-cyan-500 to-purple-500"></div>
-          </div>
-          
-          <div className="relative z-10">
-            {/* Persona Tags with enhanced styling */}
-            <div className="flex items-center gap-3 mb-4">
-              <div className={`px-4 py-2 rounded-full glass-effect border neural-border flex items-center gap-2`}>
-                <span className="text-lg">{getPersonaIcon(avatar.persona_tag)}</span>
-                <span className="neural-text font-bold text-sm uppercase tracking-wider">
-                  {avatar.persona_tag}
-                </span>
-              </div>
-              <div className="px-3 py-1 rounded-full bg-gradient-to-r from-blue-500/20 to-purple-500/20 border border-blue-400/30">
-                <span className="text-blue-300 text-xs font-medium uppercase tracking-wide">
-                  {avatar.voice_type.replace('_', ' ')}
-                </span>
-              </div>
-            </div>
-            
-            {/* AI-generated script with enhanced typography */}
-            <div className="relative">
-              <div className="absolute -left-2 top-0 w-1 h-full bg-gradient-to-b from-cyan-400 to-purple-500 rounded-full"></div>
-              <p className="text-white text-lg leading-relaxed font-medium pl-4">
-                &ldquo;{avatar.script}&rdquo;
-              </p>
-            </div>
-          </div>
-
-          {/* Action Buttons with enhanced styling */}
-          {isTop && (
-            <div className="flex justify-center gap-8 mt-6 relative z-10">
-              <motion.button
-                onClick={() => handleButtonClick('left')}
-                className="w-16 h-16 rounded-full glass-effect border-2 border-red-500/50 flex items-center justify-center text-3xl hover-cyber group relative overflow-hidden"
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.95 }}
-                aria-label="Reject Agent"
-              >
-                <div className="absolute inset-0 bg-gradient-to-r from-red-500/20 to-pink-500/20 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                <span className="relative z-10">👎</span>
-                <div className="absolute inset-0 rounded-full border-2 border-red-400 opacity-0 group-hover:opacity-100 animate-ping"></div>
-              </motion.button>
-              
-              <motion.button
-                onClick={() => handleButtonClick('right')}
-                className="w-16 h-16 rounded-full glass-effect border-2 border-green-500/50 flex items-center justify-center text-3xl hover-quantum group relative overflow-hidden"
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.95 }}
-                aria-label="Accept Agent"
-              >
-                <div className="absolute inset-0 bg-gradient-to-r from-green-500/20 to-cyan-500/20 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                <span className="relative z-10">👍</span>
-                <div className="absolute inset-0 rounded-full border-2 border-green-400 opacity-0 group-hover:opacity-100 animate-ping"></div>
-              </motion.button>
-            </div>
-          )}
-
-          {/* HeyGen Video Indicator */}
-          {avatar.heygen_video_url && (
-            <motion.div 
-              className="absolute bottom-4 right-4"
-              whileHover={{ scale: 1.1 }}
-              whileTap={{ scale: 0.95 }}
+      {/* Full-Screen Video/Image Container */}
+      <div className="w-full h-full cyber-card relative overflow-hidden">
+        {/* Video/Image Background */}
+        <div className="absolute inset-0">
+          {avatar.heygen_video_url ? (
+            <video
+              ref={videoRef}
+              className="w-full h-full object-cover"
+              loop
+              muted
+              playsInline
+              poster={avatar.image_url}
             >
-              <button className="w-12 h-12 rounded-full glass-effect border border-purple-400/50 flex items-center justify-center hover-neural group">
-                <div className="absolute inset-0 bg-gradient-to-r from-purple-500/20 to-cyan-500/20 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                <span className="text-purple-300 text-xl relative z-10">▶️</span>
-              </button>
+              <source src={avatar.heygen_video_url} type="video/mp4" />
+            </video>
+          ) : (
+            <Image
+              src={avatar.image_url}
+              alt="Avatar"
+              fill
+              className="object-cover"
+              sizes="100vw"
+              priority={isTop}
+            />
+          )}
+          
+          {/* Video Overlay */}
+          <div className="video-overlay" />
+        </div>
+
+        {/* Swipe Feedback Overlays */}
+        <motion.div
+          className="absolute inset-0 flex items-center justify-center pointer-events-none"
+          style={{ opacity: rejectOpacity, scale: rejectScale }}
+        >
+          <div className="swipe-feedback reject">
+            <div className="flex items-center gap-4">
+              <span className="text-6xl">👎</span>
+              <div className="text-right">
+                <div className="text-2xl font-black">REJECT</div>
+                <div className="text-sm opacity-80">Different vibe</div>
+              </div>
+            </div>
+          </div>
+        </motion.div>
+
+        <motion.div
+          className="absolute inset-0 flex items-center justify-center pointer-events-none"
+          style={{ opacity: acceptOpacity, scale: acceptScale }}
+        >
+          <div className="swipe-feedback accept">
+            <div className="flex items-center gap-4">
+              <span className="text-6xl">👍</span>
+              <div className="text-left">
+                <div className="text-2xl font-black">ACCEPT</div>
+                <div className="text-sm opacity-80">Good energy</div>
+              </div>
+            </div>
+          </div>
+        </motion.div>
+
+        {/* Top UI - Minimal */}
+        <div className="absolute top-0 left-0 right-0 z-30 p-4">
+          <div className="flex items-center justify-between">
+            {/* Avatar Status */}
+            <div className="minimal-ui px-3 py-2 rounded-full">
+              <div className="flex items-center gap-2">
+                <div className="w-2 h-2 bg-neon-green rounded-full animate-pulse" />
+                <span className="text-xs font-mono text-neon-green">LIVE</span>
+              </div>
+            </div>
+
+            {/* Profile Toggle */}
+            <button
+              onClick={() => setShowProfile(!showProfile)}
+              className="minimal-ui p-2 rounded-full hover:bg-glass-cyan transition-colors"
+            >
+              <span className="text-lg">ℹ️</span>
+            </button>
+          </div>
+        </div>
+
+        {/* Profile Info Overlay */}
+        <AnimatePresence>
+          {showProfile && (
+            <motion.div
+              className="absolute inset-0 z-40 bg-void/90 backdrop-blur-lg"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setShowProfile(false)}
+            >
+              <div className="flex items-center justify-center h-full p-8">
+                <motion.div
+                  className="cyber-card p-8 max-w-md w-full"
+                  initial={{ scale: 0.8, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  exit={{ scale: 0.8, opacity: 0 }}
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  {/* Avatar Image */}
+                  <div className="relative w-32 h-32 mx-auto mb-6 rounded-full overflow-hidden border-2 border-neon-cyan">
+                    <Image
+                      src={avatar.image_url}
+                      alt="Avatar"
+                      fill
+                      className="object-cover"
+                    />
+                  </div>
+
+                  {/* Name & Tags */}
+                  <div className="text-center mb-6">
+                    <h2 className="neon-text text-2xl font-bold mb-2">
+                      AGENT_{avatar.id.slice(-4).toUpperCase()}
+                    </h2>
+                    
+                    <div className="flex items-center justify-center gap-2 mb-4">
+                      <div className={`profile-tag ${avatar.persona_tag}`}>
+                        {getPersonaEmoji(avatar.persona_tag)} {avatar.persona_tag}
+                      </div>
+                      <div className="profile-tag ai">
+                        🤖 AI
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Backstory */}
+                  <div className="mb-6">
+                    <h3 className="neon-purple-text text-sm font-bold mb-2 uppercase tracking-wider">
+                      Neural Profile
+                    </h3>
+                    <p className="text-text-secondary text-sm leading-relaxed">
+                      &ldquo;{avatar.script}&rdquo;
+                    </p>
+                  </div>
+
+                  {/* Voice Type */}
+                  <div className="mb-6">
+                    <h3 className="neon-green-text text-sm font-bold mb-2 uppercase tracking-wider">
+                      Voice Matrix
+                    </h3>
+                    <div className="text-text-secondary text-sm">
+                      {avatar.voice_type.replace('_', ' ').toUpperCase()}
+                    </div>
+                  </div>
+
+                  {/* Close Button */}
+                  <button
+                    onClick={() => setShowProfile(false)}
+                    className="cyber-btn w-full"
+                  >
+                    Close Profile
+                  </button>
+                </motion.div>
+              </div>
             </motion.div>
           )}
+        </AnimatePresence>
+
+        {/* Bottom UI - Minimal Controls */}
+        <div className="absolute bottom-0 left-0 right-0 z-30 p-6">
+          <div className="flex items-center justify-between">
+            {/* Avatar Info */}
+            <div className="minimal-ui px-4 py-3 rounded-2xl max-w-xs">
+              <div className="flex items-center gap-3">
+                <span className="text-2xl">{getPersonaEmoji(avatar.persona_tag)}</span>
+                <div>
+                  <div className={`text-${getPersonaColor(avatar.persona_tag)} font-mono text-sm font-bold`}>
+                    AGENT_{avatar.id.slice(-4).toUpperCase()}
+                  </div>
+                  <div className="text-text-muted text-xs uppercase tracking-wide">
+                    {avatar.persona_tag} • {avatar.voice_type.split('_')[0]}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Action Buttons */}
+            {isTop && (
+              <div className="flex items-center gap-4">
+                <motion.button
+                  onClick={() => handleButtonClick('left')}
+                  className="w-14 h-14 rounded-full bg-carbon border-2 border-neon-pink flex items-center justify-center"
+                  whileHover={{ scale: 1.1, boxShadow: '0 0 20px rgba(255, 0, 128, 0.5)' }}
+                  whileTap={{ scale: 0.9 }}
+                >
+                  <span className="text-2xl">👎</span>
+                </motion.button>
+                
+                <motion.button
+                  onClick={() => handleButtonClick('right')}
+                  className="w-14 h-14 rounded-full bg-carbon border-2 border-neon-green flex items-center justify-center"
+                  whileHover={{ scale: 1.1, boxShadow: '0 0 20px rgba(0, 255, 65, 0.5)' }}
+                  whileTap={{ scale: 0.9 }}
+                >
+                  <span className="text-2xl">👍</span>
+                </motion.button>
+              </div>
+            )}
+          </div>
         </div>
 
-        {/* Dragging effect overlay */}
+        {/* Trending Indicator */}
+        {Math.random() > 0.7 && (
+          <div className="trending-indicator">
+            🔥 TRENDING
+          </div>
+        )}
+
+        {/* Dragging Effect */}
         {isDragging && (
-          <div className="absolute inset-0 bg-gradient-to-r from-cyan-500/10 to-purple-500/10 rounded-3xl pointer-events-none"></div>
+          <div className="absolute inset-0 bg-gradient-to-r from-neon-cyan/10 to-neon-pink/10 pointer-events-none" />
         )}
       </div>
+
+      {/* Playful Feedback Animation */}
+      <AnimatePresence>
+        {swipeFeedback && (
+          <motion.div
+            className="absolute inset-0 flex items-center justify-center pointer-events-none z-50"
+            initial={{ opacity: 0, scale: 0.5 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 1.5 }}
+            transition={{ duration: 0.6 }}
+          >
+            <div className={`text-center ${swipeFeedback === 'accept' ? 'neon-green-text' : 'neon-pink-text'}`}>
+              <div className="text-6xl mb-2">
+                {swipeFeedback === 'accept' ? '🔥' : '👻'}
+              </div>
+              <div className="text-xl font-bold font-mono">
+                {getPlayfulFeedback(swipeFeedback)}
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </motion.div>
   );
 }

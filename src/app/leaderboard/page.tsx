@@ -5,21 +5,25 @@ import { AvatarWithVotes, PersonaTag } from '@/types';
 import PersonalityFilter from '@/components/PersonalityFilter';
 import Image from 'next/image';
 import Link from 'next/link';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
+
+type TimeFilter = 'all' | 'week' | 'month';
 
 export default function LeaderboardPage() {
   const [leaderboard, setLeaderboard] = useState<AvatarWithVotes[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedPersona, setSelectedPersona] = useState<PersonaTag | undefined>();
+  const [timeFilter, setTimeFilter] = useState<TimeFilter>('week');
 
-  const fetchLeaderboard = async (persona?: PersonaTag) => {
+  const fetchLeaderboard = async (persona?: PersonaTag, time: TimeFilter = 'week') => {
     try {
       setLoading(true);
       setError(null);
 
       const params = new URLSearchParams({
         limit: '50',
+        timeframe: time,
       });
 
       if (persona) {
@@ -36,338 +40,326 @@ export default function LeaderboardPage() {
       setLeaderboard(data.leaderboard || []);
     } catch (error) {
       console.error('Error fetching leaderboard:', error);
-      setError('Failed to load neural rankings. Please try again.');
+      setError('Neural network connection failed. Retrying...');
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchLeaderboard(selectedPersona);
-  }, [selectedPersona]);
+    fetchLeaderboard(selectedPersona, timeFilter);
+  }, [selectedPersona, timeFilter]);
 
   const handlePersonaChange = (persona?: PersonaTag) => {
     setSelectedPersona(persona);
   };
 
-  const getRankEmoji = (rank: number) => {
-    switch (rank) {
-      case 1: return '🥇';
-      case 2: return '🥈';
-      case 3: return '🥉';
-      default: return `#${rank}`;
-    }
-  };
-
-  const getRankGradient = (rank: number) => {
-    switch (rank) {
-      case 1: return 'from-yellow-400 via-yellow-500 to-orange-500';
-      case 2: return 'from-gray-300 via-gray-400 to-gray-500';
-      case 3: return 'from-orange-400 via-orange-500 to-red-500';
-      default: return 'from-blue-400 via-purple-500 to-pink-500';
-    }
+  const getRankDisplay = (rank: number) => {
+    if (rank === 1) return { emoji: '👑', label: 'PRIME', color: 'neon-cyan' };
+    if (rank === 2) return { emoji: '⚡', label: 'ALPHA', color: 'neon-pink' };
+    if (rank === 3) return { emoji: '🔥', label: 'BETA', color: 'neon-purple' };
+    return { emoji: `#${rank}`, label: 'AGENT', color: 'text-secondary' };
   };
 
   const getPersonaEmoji = (persona: string) => {
     const emojiMap: Record<string, string> = {
-      funny: '😂',
-      serious: '🎯',
-      quirky: '🤪',
-      techy: '💻',
-      diva: '💅',
-      hacker: '🔒',
+      funny: '😂', serious: '🎯', quirky: '🌟', techy: '⚡', diva: '💎', hacker: '🔒',
     };
-    return emojiMap[persona] || '🎭';
-  };
-
-  const getPersonaGradient = (persona: string) => {
-    const gradients: Record<string, string> = {
-      hacker: 'from-cyan-500 to-blue-600',
-      diva: 'from-pink-500 to-purple-600',
-      funny: 'from-yellow-400 to-orange-500',
-      serious: 'from-gray-600 to-blue-700',
-      quirky: 'from-green-400 to-teal-500',
-      techy: 'from-blue-500 to-purple-700',
-    };
-    return gradients[persona] || 'from-purple-500 to-blue-600';
+    return emojiMap[persona] || '🤖';
   };
 
   return (
-    <div className="min-h-screen relative overflow-hidden">
-      {/* Animated background elements */}
-      <div className="absolute inset-0 pointer-events-none">
-        <div className="absolute top-20 left-10 w-64 h-64 bg-cyan-500/5 rounded-full blur-3xl animate-pulse"></div>
-        <div className="absolute bottom-20 right-10 w-96 h-96 bg-purple-500/5 rounded-full blur-3xl animate-pulse delay-1000"></div>
-        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-80 h-80 bg-pink-500/3 rounded-full blur-3xl animate-pulse delay-2000"></div>
+    <div className="min-h-screen bg-void relative overflow-hidden">
+      {/* Cyber Particles Background */}
+      <div className="cyber-particles">
+        {[...Array(10)].map((_, i) => (
+          <div
+            key={i}
+            className="neon-particle"
+            style={{
+              left: `${Math.random() * 100}%`,
+              top: `${Math.random() * 100}%`,
+              animationDelay: `${Math.random() * 10}s`,
+            }}
+          />
+        ))}
       </div>
 
-      <div className="container mx-auto px-4 py-8 relative z-10">
-        {/* Enhanced Header */}
-        <motion.div 
-          className="text-center mb-12"
-          initial={{ opacity: 0, y: -50 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8 }}
-        >
-          <Link 
-            href="/"
-            className="inline-flex items-center gap-2 text-cyan-400 hover:text-cyan-300 mb-6 group transition-colors"
-          >
-            <span className="text-xl group-hover:animate-bounce">←</span>
-            <span className="font-medium">Back to Agent Match</span>
+      {/* Header */}
+      <motion.header 
+        className="fixed top-0 left-0 right-0 z-50 minimal-ui m-4"
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6 }}
+      >
+        <div className="flex items-center justify-between p-4">
+          <Link href="/" className="flex items-center gap-3 hover:text-neon-cyan transition-colors">
+            <span className="text-lg">←</span>
+            <span className="neon-text font-mono text-lg font-bold">NEURAL.RANKINGS</span>
           </Link>
           
-          <motion.h1 
-            className="text-5xl md:text-6xl font-black mb-4"
-            initial={{ scale: 0.5, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            transition={{ duration: 1, delay: 0.2 }}
-          >
-            <span className="neural-text animate-cyber-glow">NEURAL</span>
-            <span className="quantum-text ml-4">RANKINGS</span>
-          </motion.h1>
-          
-          <motion.p 
-            className="text-xl text-agentic-secondary mb-6"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.6 }}
-          >
-            Top performing agents in the compatibility matrix
-          </motion.p>
+          <div className="flex items-center gap-2">
+            <div className="w-2 h-2 bg-neon-green rounded-full animate-pulse" />
+            <span className="text-neon-green font-mono text-sm">LIVE</span>
+          </div>
+        </div>
+      </motion.header>
 
-          {/* Stats Dashboard */}
-          <motion.div 
-            className="flex justify-center gap-6 mb-8"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.8 }}
-          >
-            <div className="glass-effect rounded-xl p-4 border border-cyan-400/30">
-              <div className="neural-text text-2xl font-bold">{leaderboard.length}</div>
-              <div className="text-agentic-secondary text-sm">Active Agents</div>
+      <div className="pt-20 pb-20">
+        {/* Time Filter */}
+        <motion.div
+          className="flex justify-center mb-6"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.3 }}
+        >
+          <div className="minimal-ui rounded-full p-1">
+            <div className="flex items-center gap-1">
+              {(['week', 'month', 'all'] as TimeFilter[]).map((filter) => (
+                <button
+                  key={filter}
+                  onClick={() => setTimeFilter(filter)}
+                  className={`px-4 py-2 rounded-full font-mono text-sm transition-all ${
+                    timeFilter === filter
+                      ? 'bg-neon-cyan text-void-black font-bold'
+                      : 'text-text-secondary hover:text-neon-cyan'
+                  }`}
+                >
+                  {filter.toUpperCase()}
+                </button>
+              ))}
             </div>
-            <div className="glass-effect rounded-xl p-4 border border-purple-400/30">
-              <div className="quantum-text text-2xl font-bold">
-                {leaderboard.reduce((sum, agent) => sum + agent.vote_count, 0)}
-              </div>
-              <div className="text-agentic-secondary text-sm">Total Interactions</div>
-            </div>
-            <div className="glass-effect rounded-xl p-4 border border-pink-400/30">
-              <div className="cyber-text text-2xl font-bold">
-                {leaderboard.length > 0 ? Math.round(
-                  leaderboard.reduce((sum, agent) => sum + (agent.up_votes / Math.max(agent.vote_count, 1) * 100), 0) / leaderboard.length
-                ) : 0}%
-              </div>
-              <div className="text-agentic-secondary text-sm">Avg Compatibility</div>
-            </div>
-          </motion.div>
+          </div>
         </motion.div>
 
-        {/* Enhanced Personality Filter */}
+        {/* Stats Bar */}
         <motion.div
-          initial={{ opacity: 0, y: 30 }}
+          className="flex justify-center gap-4 mb-8 px-4"
+          initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 1 }}
+          transition={{ delay: 0.5 }}
         >
+          <div className="minimal-ui px-4 py-2 rounded-lg text-center">
+            <div className="neon-cyan-text font-mono text-lg font-bold">
+              {leaderboard.length}
+            </div>
+            <div className="text-text-muted font-mono text-xs">AGENTS</div>
+          </div>
+          <div className="minimal-ui px-4 py-2 rounded-lg text-center">
+            <div className="neon-pink-text font-mono text-lg font-bold">
+              {leaderboard.reduce((sum, agent) => sum + agent.vote_count, 0)}
+            </div>
+            <div className="text-text-muted font-mono text-xs">VOTES</div>
+          </div>
+          <div className="minimal-ui px-4 py-2 rounded-lg text-center">
+            <div className="neon-green-text font-mono text-lg font-bold">
+              {timeFilter === 'week' ? '7D' : timeFilter === 'month' ? '30D' : 'ALL'}
+            </div>
+            <div className="text-text-muted font-mono text-xs">PERIOD</div>
+          </div>
+        </motion.div>
+
+        {/* Personality Filter */}
+        <div className="px-4 mb-8">
           <PersonalityFilter
             selectedPersona={selectedPersona}
             onPersonaChange={handlePersonaChange}
           />
-        </motion.div>
+        </div>
 
         {/* Loading State */}
         {loading && (
-          <motion.div 
-            className="flex items-center justify-center py-16"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-          >
-            <div className="glass-effect rounded-2xl p-8 text-center">
-              <div className="w-16 h-16 mx-auto mb-4 relative">
-                <div className="absolute inset-0 border-4 border-cyan-400/30 rounded-full"></div>
-                <div className="absolute inset-0 border-4 border-cyan-400 rounded-full border-t-transparent animate-spin"></div>
+          <div className="flex items-center justify-center py-20">
+            <motion.div
+              className="text-center"
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+            >
+              <div className="cyber-loading mb-4" />
+              <div className="neon-text font-mono text-sm">
+                SCANNING NEURAL NETWORK
               </div>
-              <p className="neural-text font-medium">Analyzing neural patterns...</p>
-            </div>
-          </motion.div>
+            </motion.div>
+          </div>
         )}
 
         {/* Error State */}
         {error && (
-          <motion.div 
-            className="text-center py-16"
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-          >
-            <div className="glass-effect rounded-2xl p-8 max-w-md mx-auto border border-red-400/30">
-              <div className="text-6xl mb-4">⚠️</div>
-              <p className="text-red-400 mb-6 font-medium">{error}</p>
+          <div className="flex items-center justify-center py-20 px-4">
+            <motion.div
+              className="cyber-card p-6 max-w-md text-center"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+            >
+              <div className="text-4xl mb-4">⚠️</div>
+              <div className="neon-pink-text font-mono text-lg mb-4 font-bold">
+                NEURAL ERROR
+              </div>
+              <p className="text-text-secondary mb-6 font-mono text-sm">{error}</p>
               <button
-                onClick={() => fetchLeaderboard(selectedPersona)}
-                className="px-6 py-3 bg-gradient-to-r from-red-500 to-pink-500 text-white rounded-xl hover:from-red-600 hover:to-pink-600 transition-all font-medium"
+                onClick={() => fetchLeaderboard(selectedPersona, timeFilter)}
+                className="cyber-btn w-full"
               >
-                Retry Neural Sync
+                RECONNECT
               </button>
-            </div>
-          </motion.div>
+            </motion.div>
+          </div>
         )}
 
-        {/* Enhanced Leaderboard */}
+        {/* Leaderboard */}
         {!loading && !error && (
-          <div className="max-w-4xl mx-auto">
+          <div className="px-4">
             {leaderboard.length === 0 ? (
-              <motion.div 
-                className="text-center py-16"
+              <motion.div
+                className="flex items-center justify-center py-20"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
               >
-                <div className="glass-effect rounded-2xl p-12 border border-white/10">
-                  <div className="text-6xl mb-6">🤖</div>
-                  <p className="text-agentic-secondary text-xl mb-6">
-                    No agents found in this neural pathway.
+                <div className="cyber-card p-8 max-w-md text-center">
+                  <div className="text-4xl mb-4">🤖</div>
+                  <div className="neon-text font-mono text-lg mb-4 font-bold">
+                    NO AGENTS FOUND
+                  </div>
+                  <p className="text-text-secondary mb-6 font-mono text-sm">
+                    No neural activity detected in this timeframe.
                   </p>
-                  <Link
-                    href="/"
-                    className="inline-block px-8 py-4 bg-gradient-to-r from-cyan-500 to-purple-500 text-white rounded-xl hover:from-cyan-600 hover:to-purple-600 transition-all font-bold"
-                  >
-                    Initialize Agent Matching
+                  <Link href="/" className="cyber-btn w-full block">
+                    START SCANNING
                   </Link>
                 </div>
               </motion.div>
             ) : (
-              <div className="space-y-4">
-                {leaderboard.map((avatar, index) => (
-                  <motion.div
-                    key={avatar.id}
-                    className={`glass-effect rounded-2xl p-6 border transition-all hover:border-white/20 group relative overflow-hidden ${
-                      index < 3 ? 'border-yellow-400/30 shadow-2xl' : 'border-white/10'
-                    }`}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.6, delay: index * 0.1 }}
-                    whileHover={{ scale: 1.02, y: -2 }}
-                  >
-                    {/* Background gradient for top 3 */}
-                    {index < 3 && (
-                      <div className={`absolute inset-0 bg-gradient-to-r ${getRankGradient(index + 1)} opacity-5 group-hover:opacity-10 transition-opacity`}></div>
-                    )}
-
-                    <div className="flex items-center gap-6 relative z-10">
-                      {/* Enhanced Rank */}
-                      <div className="text-center min-w-[80px]">
-                        <div className={`text-4xl font-black mb-2 ${
-                          index < 3 ? 'animate-pulse' : ''
-                        }`}>
-                          {getRankEmoji(index + 1)}
-                        </div>
-                        {index < 3 && (
-                          <div className="text-xs text-agentic-secondary uppercase tracking-wider">
-                            {index === 0 ? 'PRIME' : index === 1 ? 'ALPHA' : 'BETA'}
-                          </div>
-                        )}
-                      </div>
-
-                      {/* Enhanced Avatar Image */}
-                      <div className="relative">
-                        <div className={`w-20 h-20 rounded-2xl overflow-hidden bg-gradient-to-br ${getPersonaGradient(avatar.persona_tag)} p-1`}>
-                          <div className="w-full h-full rounded-xl overflow-hidden">
-                            <Image
-                              src={avatar.image_url}
-                              alt="Agent Avatar"
-                              width={80}
-                              height={80}
-                              className="w-full h-full object-cover"
-                            />
-                          </div>
-                        </div>
-                        
-                        {/* Status indicator */}
-                        <div className="absolute -top-1 -right-1 w-6 h-6 bg-green-400 rounded-full border-2 border-agentic-primary flex items-center justify-center">
-                          <div className="w-2 h-2 bg-white rounded-full animate-pulse"></div>
-                        </div>
-                      </div>
-
-                      {/* Enhanced Content */}
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-3 mb-3">
-                          <div className={`px-4 py-2 rounded-full glass-effect border neural-border flex items-center gap-2`}>
-                            <span className="text-lg">{getPersonaEmoji(avatar.persona_tag)}</span>
-                            <span className="neural-text font-bold text-sm uppercase tracking-wider">
-                              {avatar.persona_tag}
-                            </span>
-                          </div>
-                          <div className="px-3 py-1 rounded-full bg-gradient-to-r from-blue-500/20 to-purple-500/20 border border-blue-400/30">
-                            <span className="text-blue-300 text-xs font-medium uppercase tracking-wide">
-                              {avatar.voice_type.replace('_', ' ')}
-                            </span>
-                          </div>
-                        </div>
-                        
-                        <p className="text-agentic-primary mb-2 line-clamp-2 group-hover:text-white transition-colors">
-                          &ldquo;{avatar.script}&rdquo;
-                        </p>
-                      </div>
-
-                      {/* Enhanced Stats */}
-                      <div className="text-right min-w-[140px]">
-                        <div className="neural-text text-3xl font-black mb-1">
-                          {avatar.vote_count}
-                        </div>
-                        <div className="text-sm text-agentic-secondary mb-3">
-                          neural interactions
-                        </div>
-                        
-                        <div className="flex items-center justify-end gap-4 text-sm mb-2">
-                          <div className="flex items-center gap-1">
-                            <span className="text-green-400 font-bold">👍</span>
-                            <span className="text-green-400 font-medium">{avatar.up_votes}</span>
-                          </div>
-                          <div className="flex items-center gap-1">
-                            <span className="text-red-400 font-bold">👎</span>
-                            <span className="text-red-400 font-medium">{avatar.down_votes}</span>
-                          </div>
-                        </div>
-                        
-                        {avatar.vote_count > 0 && (
-                          <div className="glass-effect rounded-lg px-3 py-1 border border-white/10">
-                            <div className="quantum-text text-sm font-bold">
-                              {Math.round((avatar.up_votes / avatar.vote_count) * 100)}%
+              <div className="max-w-2xl mx-auto space-y-3">
+                <AnimatePresence>
+                  {leaderboard.map((avatar, index) => {
+                    const rankInfo = getRankDisplay(index + 1);
+                    return (
+                      <motion.div
+                        key={avatar.id}
+                        className="leaderboard-item"
+                        initial={{ opacity: 0, x: -20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: index * 0.1 }}
+                        whileHover={{ scale: 1.02 }}
+                      >
+                        <div className="flex items-center gap-4">
+                          {/* Rank */}
+                          <div className="text-center min-w-[60px]">
+                            <div className={`leaderboard-rank text-${rankInfo.color}`}>
+                              {rankInfo.emoji}
                             </div>
-                            <div className="text-xs text-agentic-secondary">compatibility</div>
+                            <div className="text-text-muted font-mono text-xs">
+                              {rankInfo.label}
+                            </div>
                           </div>
-                        )}
-                      </div>
-                    </div>
 
-                    {/* Hover effect */}
-                    <div className="absolute inset-0 bg-gradient-to-r from-cyan-500/5 via-purple-500/5 to-pink-500/5 opacity-0 group-hover:opacity-100 transition-opacity rounded-2xl"></div>
-                  </motion.div>
-                ))}
+                          {/* Avatar */}
+                          <div className="relative">
+                            <div className="w-16 h-16 rounded-lg overflow-hidden border border-neon-cyan">
+                              <Image
+                                src={avatar.image_url}
+                                alt="Agent"
+                                width={64}
+                                height={64}
+                                className="w-full h-full object-cover"
+                              />
+                            </div>
+                            <div className="absolute -top-1 -right-1 w-4 h-4 bg-neon-green rounded-full border border-void-black flex items-center justify-center">
+                              <div className="w-1.5 h-1.5 bg-void-black rounded-full" />
+                            </div>
+                          </div>
+
+                          {/* Info */}
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2 mb-2">
+                              <div className={`profile-tag ${avatar.persona_tag}`}>
+                                {getPersonaEmoji(avatar.persona_tag)} {avatar.persona_tag}
+                              </div>
+                            </div>
+                            <p className="text-text-primary text-sm line-clamp-2 font-mono">
+                              &ldquo;{avatar.script}&rdquo;
+                            </p>
+                          </div>
+
+                          {/* Stats */}
+                          <div className="text-right min-w-[80px]">
+                            <div className="neon-cyan-text font-mono text-xl font-bold">
+                              {avatar.vote_count}
+                            </div>
+                            <div className="text-text-muted font-mono text-xs mb-2">
+                              VOTES
+                            </div>
+                            
+                            <div className="flex items-center justify-end gap-2 text-xs">
+                              <span className="text-neon-green">👍{avatar.up_votes}</span>
+                              <span className="text-neon-pink">👎{avatar.down_votes}</span>
+                            </div>
+                            
+                            {avatar.vote_count > 0 && (
+                              <div className="text-neon-purple font-mono text-xs mt-1">
+                                {Math.round((avatar.up_votes / avatar.vote_count) * 100)}%
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </motion.div>
+                    );
+                  })}
+                </AnimatePresence>
               </div>
             )}
           </div>
         )}
-
-        {/* Enhanced Footer */}
-        <motion.div 
-          className="text-center mt-16 pb-8"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 2 }}
-        >
-          <div className="glass-effect rounded-xl p-6 max-w-md mx-auto border border-white/10">
-            <div className="flex items-center justify-center gap-2 mb-2">
-              <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
-              <span className="text-green-400 text-sm font-bold">NEURAL NETWORK ACTIVE</span>
-              <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse delay-300"></div>
-            </div>
-            <p className="text-agentic-secondary text-xs">
-              Rankings updated in real-time via quantum synchronization
-            </p>
-          </div>
-        </motion.div>
       </div>
+
+      {/* Bottom Navigation */}
+      <div className="cyber-nav">
+        <div className="flex items-center justify-around">
+          <Link href="/" className="nav-item">
+            <div className="flex flex-col items-center gap-1">
+              <span className="text-lg">🏠</span>
+              <span>Home</span>
+            </div>
+          </Link>
+          
+          <button className="nav-item active">
+            <div className="flex flex-col items-center gap-1">
+              <span className="text-lg">🏆</span>
+              <span>Rankings</span>
+            </div>
+          </button>
+          
+          <Link href="/submit" className="nav-item">
+            <div className="flex flex-col items-center gap-1">
+              <span className="text-lg">➕</span>
+              <span>Create</span>
+            </div>
+          </Link>
+          
+          <button
+            onClick={() => setTimeFilter(timeFilter === 'week' ? 'month' : 'week')}
+            className="nav-item"
+          >
+            <div className="flex flex-col items-center gap-1">
+              <span className="text-lg">📊</span>
+              <span>Filter</span>
+            </div>
+          </button>
+        </div>
+      </div>
+
+      {/* Neural Activity Indicator */}
+      <motion.div
+        className="fixed bottom-20 left-4 z-40 minimal-ui p-2 rounded-full"
+        initial={{ opacity: 0, scale: 0 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ delay: 1 }}
+      >
+        <div className="flex items-center gap-2">
+          <div className="w-2 h-2 bg-neon-green rounded-full animate-pulse" />
+          <span className="text-neon-green font-mono text-xs">NEURAL</span>
+        </div>
+      </motion.div>
     </div>
   );
 }
