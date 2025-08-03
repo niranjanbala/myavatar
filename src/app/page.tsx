@@ -94,8 +94,8 @@ export default function HomePage() {
           </motion.div>
           
           {/* Navigation with enhanced styling */}
-          <motion.div 
-            className="flex justify-center gap-6 mb-8"
+          <motion.div
+            className="flex flex-col sm:flex-row justify-center gap-4 mb-8"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 1.2, duration: 0.6 }}
@@ -110,6 +110,18 @@ export default function HomePage() {
                 <span className="font-bold neural-text">NEURAL RANKINGS</span>
               </div>
               <div className="absolute inset-0 rounded-2xl border border-purple-400 opacity-0 group-hover:opacity-50 animate-pulse"></div>
+            </Link>
+            
+            <Link
+              href="/submit"
+              className="group relative px-8 py-4 rounded-2xl glass-effect border border-cyan-400/30 hover-quantum transition-all duration-300 overflow-hidden"
+            >
+              <div className="absolute inset-0 bg-gradient-to-r from-cyan-500/10 to-blue-500/10 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+              <div className="relative flex items-center gap-3">
+                <span className="text-2xl">🤖</span>
+                <span className="font-bold quantum-text">CREATE AGENT</span>
+              </div>
+              <div className="absolute inset-0 rounded-2xl border border-cyan-400 opacity-0 group-hover:opacity-50 animate-pulse"></div>
             </Link>
           </motion.div>
         </motion.div>

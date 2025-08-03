@@ -103,6 +103,45 @@ export async function createHeyGenVideo(request: HeyGenVideoRequest): Promise<He
   }
 }
 
+// Function that accepts a custom API key for user submissions
+export async function createHeyGenVideoWithKey(request: HeyGenVideoRequest, apiKey: string): Promise<HeyGenVideoResponse> {
+  if (!apiKey) {
+    throw new Error('HeyGen API key is required');
+  }
+
+  try {
+    const response = await fetch(`${HEYGEN_API_URL}/video/generate`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${apiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        script: request.script,
+        voice: {
+          type: request.voice_type,
+        },
+        avatar: request.avatar_id || 'default',
+        quality: 'high',
+      }),
+    });
+
+    if (!response.ok) {
+      throw new Error(`HeyGen API error: ${response.statusText}`);
+    }
+
+    const data = await response.json();
+    return {
+      video_url: data.video_url || '',
+      status: data.status || 'processing',
+      job_id: data.job_id || '',
+    };
+  } catch (error) {
+    console.error('Error creating HeyGen video with custom key:', error);
+    throw error;
+  }
+}
+
 export async function getHeyGenVideoStatus(jobId: string): Promise<HeyGenVideoResponse> {
   if (!HEYGEN_API_KEY) {
     throw new Error('HeyGen API key not configured');

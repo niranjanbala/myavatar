@@ -7,7 +7,10 @@ export const DEMO_AVATARS: Avatar[] = [
     voice_type: 'male_confident',
     persona_tag: 'hacker',
     script: "I've just breached the firewalls of three rogue AIs — swipe right if you want in.",
+    is_approved: true,
+    is_featured: false,
     created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
   },
   {
     id: '2',
@@ -15,7 +18,10 @@ export const DEMO_AVATARS: Avatar[] = [
     voice_type: 'female_elegant',
     persona_tag: 'diva',
     script: "Darling, I'm too glamorous to be swiped left. Prove your taste.",
+    is_approved: true,
+    is_featured: false,
     created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
   },
   {
     id: '3',
@@ -23,7 +29,10 @@ export const DEMO_AVATARS: Avatar[] = [
     voice_type: 'male_friendly',
     persona_tag: 'funny',
     script: "I'm 90% caffeine and 10% bad decisions. Swipe accordingly.",
+    is_approved: true,
+    is_featured: false,
     created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
   },
   {
     id: '4',
@@ -31,7 +40,10 @@ export const DEMO_AVATARS: Avatar[] = [
     voice_type: 'female_professional',
     persona_tag: 'serious',
     script: "Excellence isn't a skill, it's an attitude. Are you ready to elevate?",
+    is_approved: true,
+    is_featured: false,
     created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
   },
   {
     id: '5',
@@ -39,7 +51,10 @@ export const DEMO_AVATARS: Avatar[] = [
     voice_type: 'male_quirky',
     persona_tag: 'quirky',
     script: "I collect vintage rubber ducks and existential thoughts. Interested?",
+    is_approved: true,
+    is_featured: false,
     created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
   },
   {
     id: '6',
@@ -47,7 +62,10 @@ export const DEMO_AVATARS: Avatar[] = [
     voice_type: 'female_tech',
     persona_tag: 'techy',
     script: "I debug code by day and debug my life by night. Both need work.",
+    is_approved: true,
+    is_featured: false,
     created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
   },
   {
     id: '7',
@@ -55,7 +73,10 @@ export const DEMO_AVATARS: Avatar[] = [
     voice_type: 'male_mysterious',
     persona_tag: 'hacker',
     script: "Zero-day exploits are my morning coffee. Care to join the dark side?",
+    is_approved: true,
+    is_featured: false,
     created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
   },
   {
     id: '8',
@@ -63,7 +84,10 @@ export const DEMO_AVATARS: Avatar[] = [
     voice_type: 'female_glamorous',
     persona_tag: 'diva',
     script: "I don't do ordinary, sweetie. My aura is premium subscription only.",
+    is_approved: true,
+    is_featured: false,
     created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
   },
   {
     id: '9',
@@ -71,7 +95,10 @@ export const DEMO_AVATARS: Avatar[] = [
     voice_type: 'male_casual',
     persona_tag: 'funny',
     script: "My life is like a romantic comedy, except it's more comedy than romance.",
+    is_approved: true,
+    is_featured: false,
     created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
   },
   {
     id: '10',
@@ -79,7 +106,10 @@ export const DEMO_AVATARS: Avatar[] = [
     voice_type: 'female_confident',
     persona_tag: 'serious',
     script: "I believe in meaningful connections and purposeful conversations. You?",
+    is_approved: true,
+    is_featured: false,
     created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
   },
 ];
 
@@ -122,9 +152,19 @@ export class DemoVoteStorage {
     return this.getVotedAvatars().includes(avatarId);
   }
 
-  static clearAll(): void {
-    if (typeof window === 'undefined') return;
-    localStorage.removeItem(this.VOTES_KEY);
-    localStorage.removeItem(this.VOTED_AVATARS_KEY);
+  static getAvatarWithVotes(avatar: Avatar) {
+    const votes = this.getVotes()[avatar.id] || { up: 0, down: 0 };
+    const totalVotes = votes.up + votes.down;
+    return {
+      ...avatar,
+      vote_count: totalVotes,
+      up_votes: votes.up,
+      down_votes: votes.down,
+      approval_rate: totalVotes > 0 ? Math.round((votes.up / totalVotes) * 100) : 0,
+    };
+  }
+
+  static getAllAvatarsWithVotes() {
+    return DEMO_AVATARS.map(avatar => this.getAvatarWithVotes(avatar));
   }
 }
